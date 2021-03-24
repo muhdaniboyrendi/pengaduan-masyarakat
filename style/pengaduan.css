@@ -1,0 +1,44 @@
+ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #333;
+    position: fixed;
+    top: 0;
+    width: 100%;
+}  
+li {
+    float: left;
+}  
+li.label{
+    margin-right: 30px;
+}
+li label{
+    color: #fff;
+    font-size: larger;
+    margin-top: 10px;
+}
+li a {
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+}
+li.logout{
+    margin-right: 10px;
+    float: right;
+}
+li.logout a{
+    color: red;
+}
+a.active {
+    background-color: #0015d4;
+}
+/* Change the link color to #111 (black) on hover */
+li a:hover {
+    background-color: #111;
+    color: rgb(0, 81, 255);
+    transition: .3s;
+}
