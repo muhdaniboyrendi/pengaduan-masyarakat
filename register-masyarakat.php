@@ -56,6 +56,7 @@
         if(registermasyarakat($_POST) > 0){
             echo "<script>
                     alert('Akunmu Telah Berhasil Terdaftar');
+                    document.location.href = login.php;
                   </script>";
         }else{
             echo mysqli_error($conn);

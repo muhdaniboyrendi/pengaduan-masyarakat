@@ -7,8 +7,38 @@
       exit;
     }
 
+    function FetchData($query){
+        global $conn; // memanggil fungsi DBConnection dan masukkan ke dalam variable $conn
+        $query = mysqli_query($conn, $query); // masukkan variable $conn, dan paramenter $query ke dalam fungsi mysqli_query
+        $rows = []; // menyiapkan varible bertipe array kosong
+        while ($row = mysqli_fetch_assoc($query)) { // looping hasil query dan di ubah menjadi array assosicative dan masukkan ke dalam folder row
+            $rows[] = $row; // masukkan data dari varible $row dan masukkan ke dalam varible $rows (yang berisi array kosong)
+        }
+        return $rows; // kembalikan data yang sudah masuh ke variable $rows
+    }
+
+    function FetchData2($query){
+        global $conn; // memanggil fungsi DBConnection dan masukkan ke dalam variable $conn
+        $query = mysqli_query($conn, $query);
+        while ($row = mysqli_fetch_assoc($query)) {
+            $rows[] = $row;
+        }
+        return $rows;
+    }
+
+    $pengaduan = FetchData("SELECT * FROM pengaduan
+                            INNER JOIN masyarakat
+                            ON pengaduan.nik = masyarakat.nik");
+
+    $laporan2 = FetchData2("SELECT * FROM pengaduan
+                            INNER JOIN tanggapan
+                            ON pengaduan.id_pengaduan = tanggapan.id_pengaduan
+                            INNER JOIN petugas
+                            ON tanggapan.id_petugas = petugas.id_petugas
+                            WHERE tanggapan.id_pengaduan = pengaduan.id_pengaduan");
+
     // pagination
-    $dataPerHalaman = 7;
+    $dataPerHalaman = 5;
     $result = mysqli_query($conn, "SELECT * FROM masyarakat");
     $jumlahData = mysqli_num_rows($result);
     $jumlahHalaman = ceil($jumlahData / $dataPerHalaman);
@@ -166,28 +196,21 @@
                                         </tr>
                                     </thead>
                                     <tbody>
+                                        <?php foreach($pengaduan as $item): ?>
                                         <tr>
                                             <?php
                                                 $i = 1;
-                                                $laporan = mysqli_query($conn, "SELECT * FROM pengaduan 
-                                                                                INNER JOIN masyarakat 
-                                                                                ON pengaduan.nik = masyarakat.nik 
-                                                                                INNER JOIN tanggapan 
-                                                                                ON tanggapan.id_pengaduan = pengaduan.id_pengaduan 
-                                                                                ORDER BY pengaduan.id_pengaduan 
-                                                                                DESC");
-                                                while($row = mysqli_fetch_assoc($laporan)){
                                             ?>
-                                            <td><?= $i; ?></td>
-                                            <td><?= $row["nik"]; ?></td>
-                                            <td><?= $row["nama"]; ?></td>
-                                            <td><?= $row["tgl_pengaduan"]; ?></td>
-                                            <td><?= $row["status"]; ?></td>
+                                            <td><?= $i; $i++; ?></td>
+                                            <td><?= $item["nik"]; ?></td>
+                                            <td><?= $item["nama"]; ?></td>
+                                            <td><?= $item["tgl_pengaduan"]; ?></td>
+                                            <td><?= $item["status"]; ?></td>
                                             <td>
-                                                <a href="#" class="btn btn-primary" data-toggle="modal" data-target="#lihatModal">Lihat Laporan</a>
+                                                <a href="?id_pengaduan=<?= $item['id_pengaduan']; ?>" class="badge btn-primary" data-toggle="modal" data-target="#lihatModal">Lihat Laporan</a>
                                             </td>
-                                            <?php }$i++; ?>
                                         </tr>
+                                        <?php endforeach; ?>
                                     </tbody>
                                 </table>
 
@@ -247,9 +270,20 @@
                                     <span aria-hidden="true">×</span>
                                 </button>
                             </div>
+                            <?php foreach($laporan2 as $item2): ?>
                             <div class="modal-body">
-                            
+                                <h5>Isi Laporan</h5>
+                                <p><?= $item2["isi_laporan"]; ?></p>
+                                <hr>
+                                <h5>Foto</h5>
+                                <p><?= $item2["foto"]; ?></p>
+                                <hr>
+                                <h5>Tanggapan</h5>
+                                <p><?= $item2["tanggapan"]; ?></p>
+                                <h5>Petugas</h5>
+                                <p><?= $item2["nama_petugas"]; ?></p>
                             </div>
+                            <?php endforeach; ?>
                             <div class="modal-footer">
                                 <button class="btn btn-danger" type="button" data-dismiss="modal">Tutup</button>
                             </div>

@@ -11,8 +11,9 @@
     function pengaduan($data){
         global $conn;
         $nik = $_SESSION["data"]["nik"];
-        $tgl = date("d-m-y");
+        $tgl = date("Y-m-d");
         $isi = $data['isi_laporan'];
+        $status = '0';
 
         // upload foto
         $foto = upload();
@@ -21,7 +22,7 @@
         }
 
         // tambah ke database
-        mysqli_query($conn, "INSERT INTO pengaduan VALUES('', '$tgl', '$nik', '$isi', '$foto', 'proses')");
+        mysqli_query($conn, "INSERT INTO pengaduan VALUES('', '$tgl', '$nik', '$isi', '$foto', '$status')");
         return mysqli_affected_rows($conn);
     }
 
