@@ -1,5 +1,5 @@
 <?php
 
-    $conn = mysqli_connect("localhost", "root", "", "pengaduan_masyarakat");
+    $conn = mysqli_connect("localhost", "root", "", "pengaduan-masyarakat");
 
 ?>

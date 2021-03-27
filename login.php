@@ -3,38 +3,63 @@
     session_start();
     require 'koneksi.php';
 
-    if(isset($_SESSION["login"])){
-        header("location: index.php");
+    if(isset($_SESSION["masyarakat"])){
+        header("location: masyarakat/");
+        exit;
+    }
+    if(isset($_SESSION["admin"])){
+        header("location: admin/");
+        exit;
+    }
+    if(isset($_SESSION["petugas"])){
+        header("location: petugas/");
         exit;
     }
 
     if(isset($_POST["login"])){
         $username = $_POST["username"];
         $password = $_POST["password"];
+
         $result = mysqli_query($conn, "SELECT * FROM masyarakat WHERE username = '$username'");
+        $cek = mysqli_num_rows($result);
+        $row = mysqli_fetch_assoc($result);
+
         $result2 = mysqli_query($conn, "SELECT * FROM petugas WHERE username = '$username'");
+        $cek2 = mysqli_num_rows($result2);
+        $row2 = mysqli_fetch_assoc($result2);
+
         // cek username masyarakat
-        if(mysqli_num_rows($result) === 1){
+        if($cek > 0){
             // cek password
-            $row = mysqli_fetch_assoc($result);
             if(password_verify($password, $row["password"])){
                 // set session
-                $_SESSION["login"] = true;
-                header("location: index.php");
+                $_SESSION["masyarakat"] = true;
+                $_SESSION["data"] = $row;
+                header("location: masyarakat/");
                 exit;
             }
-        }$error = true;
+        }
         // cek username petugas
-        if(mysqli_num_rows($result2) === 1){
+        if($cek2 > 0){
             // cek password
-            $row = mysqli_fetch_assoc($result2);
-            if(password_verify($password, $row["password"])){
+            if(password_verify($password, $row2["password"])){
                 // set session
-                $_SESSION["login"] = true;
-                header("location: index.php");
-                exit;
+                if($row2['level'] == "admin"){
+                    $_SESSION["admin"] = true;
+                    $_SESSION["data"] = $row2;
+                    header("location: admin/");
+                    exit;
+                }elseif($row2['level'] == "petugas"){
+                    $_SESSION["petugas"] = true;
+                    $_SESSION["data"] = $row2;
+                    header("location: petugas/");
+                    exit; 
+                }
             }
-        }$error = true;
+        }
+        echo "<script>
+                alert('Username atau password yang anda masukan salah')
+            </script";
     }
 
 ?>
@@ -73,29 +98,7 @@
 
                                 <!-- Button trigger modal -->
                                 <div class="text-center">
-                                    <a href="#" data-bs-toggle="modal" data-bs-target="#exampleModal">Belun punya akun? Daftar!</a>
-                                </div>
-
-                                <!-- Modal -->
-                                <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title" id="exampleModalLabel">Daftar sebagai</h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                            </div>
-                                            <div class="modal-body">
-                                                <h5>Admin / Petugas</h5>
-                                                <p><a href="register-petugas.php" role="button" class="btn btn-success popover-test" title="Popover title" data-bs-content="Popover body content is set in this attribute.">Daftar</a> Khusus untuk admin atau petugas</p>
-                                                <hr>
-                                                <h5>Masyarakat</h5>
-                                                <p><a href="register-masyarakat.php" role="button" class="btn btn-success popover-test" title="Popover title" data-bs-content="Popover body content is set in this attribute.">Daftar</a> Khusus untuk masyarakat</p>
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <a href="register-masyarakat.php">Belun punya akun? Daftar!</a>
                                 </div>
                             </div>
                         </div>

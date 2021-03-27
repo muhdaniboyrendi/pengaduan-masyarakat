@@ -13,10 +13,25 @@
         $confirmpassword = mysqli_real_escape_string($conn, $data["password2"]);
 
         // cek username
-        $result = mysqli_query($conn, "SELECT username FROM masyarakat WHERE username = '$username  '");
-        if(mysqli_fetch_assoc($result)){
+        $sql = mysqli_query($conn, "SELECT username FROM masyarakat WHERE username = '$username'");
+        $sql2 = mysqli_query($conn, "SELECT username FROM petugas WHERE username = '$username'");
+        $sql3 = mysqli_query($conn, "SELECT username FROM masyarakat WHERE nik = '$nik'");
+        
+        if(mysqli_fetch_assoc($sql)){
             echo "<script>
-                    alert('Username Has Been Registered')
+                    alert('Username Telah Terdaftar')
+                  </script";
+            return false;
+        }
+        if(mysqli_fetch_assoc($sql2)){
+            echo "<script>
+                    alert('Username Telah Terdaftar')
+                  </script";
+            return false;
+        }
+        if(mysqli_fetch_assoc($sql3)){
+            echo "<script>
+                    alert('NIK Telah Terdaftar')
                   </script";
             return false;
         }
@@ -24,7 +39,7 @@
         // cek password
         if($password !== $confirmpassword){
             echo "<script>
-                    alert('Your Password Cannot be Confirmed')
+                    alert('Password Tidak Bisa Dikonfirmasi')
                   </script";
             return false;
         }
@@ -40,11 +55,12 @@
     if(isset($_POST["register"])){
         if(registermasyarakat($_POST) > 0){
             echo "<script>
-                    alert('Your Account Has Been Successfully Registered');
+                    alert('Akunmu Telah Berhasil Terdaftar');
                   </script>";
         }else{
             echo mysqli_error($conn);
         }
+        
     }
 
 ?>
