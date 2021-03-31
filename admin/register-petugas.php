@@ -275,7 +275,7 @@
                     <div class="modal-body">Pilih "Logout" di bawah ini jika Anda siap untuk mengakhiri sesi Anda saat ini</div>
                     <div class="modal-footer">
                         <button class="btn btn-danger" type="button" data-dismiss="modal">Cancel</button>
-                        <a class="btn btn-primary" href="login.html">Logout</a>
+                        <a class="btn btn-primary" href="../logout.php">Logout</a>
                     </div>
                 </div>
             </div>

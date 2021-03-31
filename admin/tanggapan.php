@@ -4,31 +4,35 @@
     require '../koneksi.php';
 
     if(!isset($_SESSION["admin"])){
-        header("location: ../login.php");
-        exit;
+      header("location: ../login.php");
+      exit;
     }
 
-    $result = mysqli_query($conn, "SELECT * FROM pengaduan 
-                                    INNER JOIN masyarakat 
-                                    WHERE pengaduan.nik = masyarakat.nik");
-    $row = mysqli_fetch_assoc($result);
+    if(isset($_POST['tanggapi'])){
+        $id_pengaduan = $_GET['id_pengaduan'];
+        $tanggapan = $_POST['tanggapan'];
+        $tgl = date("Y-m-d");
+        $id_petugas = $_SESSION['id'];
 
+        $result = mysqli_query($conn, "INSERT INTO tanggapan 
+                                        VALUES('', '$id_pengaduan', '$tgl', '$tanggapan', '$id_petugas')");
 
-    // pagination
-    $dataPerHalaman = 5;
-    $result = mysqli_query($conn, "SELECT * FROM masyarakat
-                                    INNER JOIN pengaduan
-                                    ON masyarakat.nik = pengaduan.nik
-                                    WHERE status = 'selesai'");
-    $jumlahData = mysqli_num_rows($result);
-    $jumlahHalaman = ceil($jumlahData / $dataPerHalaman);
-    if(isset($_GET["halaman"])){
-        $halamanAktif = $_GET["halaman"];
-    }else {
-        $halamanAktif = 1;
+        $cek = mysqli_query($conn, "UPDATE pengaduan 
+                                    SET status = 'selesai' 
+                                    WHERE id_pengaduan = '$id_pengaduan'") 
+                                    or die(mysqli_error($conn));
+
+        if($cek){
+            echo "<script>
+                    alert('Laporan telah berhasil ditanggapi')
+                </script";
+            header("location: pengaduan.php");
+        }else {
+            echo "<script>
+                    alert('Laporan gagal ditanggapi')
+                </script";
+        }
     }
-    $dataAwal = ($dataPerHalaman * $halamanAktif) - $dataPerHalaman;
-    $laporan = mysqli_query($conn, "SELECT * FROM masyarakat LIMIT $dataAwal, $dataPerHalaman");
 
 ?>
 
@@ -40,7 +44,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
         <meta name="description" content="">
         <meta name="author" content="">
-        <title>Generate Laporan</title>
+        <title>Pengaduan</title>
         <!-- Custom fonts for this template-->
         <link href="../vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
         <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
@@ -77,7 +81,7 @@
                 <div class="sidebar-heading">
                     admin
                 </div>
-                <li class="nav-item">
+                <li class="nav-item active">
                     <a class="nav-link pb-0" href="pengaduan.php">
                         <i class="fas fa-fw fa-tachometer-alt"></i>
                         <span>Pengaduan</span>
@@ -101,7 +105,7 @@
                         <span>Users</span>
                     </a>
                 </li>
-                <li class="nav-item active">
+                <li class="nav-item">
                     <a class="nav-link" href="generate.php">
                         <i class="fas fa-fw fa-tachometer-alt"></i>
                         <span>Generate Laporan</span>
@@ -176,73 +180,15 @@
 
                     <!-- Begin Page Content -->
                     <div class="container-fluid">
-                        <!-- tulis laporan -->
-                        <h1 class="h3 mb-4 text-gray-800">Generate Laporan</h1>
+                        <!-- tanggapi laporan -->
+                        <h1 class="h3 mb-4 text-gray-800">Tanggapi Laporan</h1>
                         <div class="row">
-                            <div class="col-lg">
-                                <table class="table table-hover">
-                                    <thead>
-                                        <tr class="table-primary">
-                                            <th scope="col">No</th>
-                                            <th scope="col">Nama Pelapor</th>
-                                            <th scope="col">Tanggal Pengaduan</th>
-                                            <th scope="col">Isi Laporan</th>
-                                            <th scope="col">Foto</th>
-                                            <th scope="col">Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php $i = 1; ?>
-                                        <?php foreach($result as $item): ?>
-                                        <tr>
-                                            <td><?= $i; $i++; ?></td>
-                                            <td><?= $item["nama"]; ?></td>
-                                            <td><?= $item["tgl_pengaduan"]; ?></td>
-                                            <td><?= $item["isi_laporan"]; ?></td>
-                                            <td><img src="../img/<?= $item["foto"]; ?>" width="100px"></td>
-                                            <td><?= $item["status"]; ?></td>
-                                        </tr>
-                                        <?php endforeach; ?>
-                                        <?php $i++; ?>
-                                    </tbody>
-                                </table>
-
-                                <!-- pagination -->
-                                <nav aria-label="Page navigation example">
-                                    <ul class="pagination">
-                                        <?php if($halamanAktif > 1): ?>
-                                            <li class="page-item">
-                                                <a class="page-link" href="?halaman=<?= $halamanAktif - 1; ?>">&laquo;</a>
-                                            </li>
-                                        <?php else: ?>
-                                            <li class="page-item disabled">
-                                                <a class="page-link" href="#">&laquo;</a>
-                                            </li>
-                                        <?php endif; ?>
-                                        <?php for($i = 1; $i <= $jumlahHalaman; $i++): ?>
-                                            <?php if($i == $halamanAktif): ?>
-                                                <li class="page-item active" aria-current="page">
-                                                    <a class="page-link" href="?halaman=<?= $i; ?>"><?= $i; ?></a>
-                                                </li>
-                                            <?php else: ?>
-                                                        <li class="page-item" aria-current="page">
-                                                            <a class="page-link" href="?halaman=<?= $i; ?>"><?= $i; ?></a>
-                                                        </li>
-                                            <?php endif; ?>
-                                        <?php endfor; ?>
-                                        <?php if($halamanAktif < $jumlahHalaman): ?>
-                                            <li class="page-item">
-                                                <a class="page-link" href="?halaman=<?= $halamanAktif + 1; ?>">&raquo;</a>
-                                            </li>
-                                        <?php else: ?>
-                                            <li class="page-item disabled">
-                                                <a class="page-link" href="#">&raquo;</a>
-                                            </li>
-                                        <?php endif; ?>
-                                    </ul>
-                                </nav>
-                                <!-- end pagination -->
-                                <a href="generate.js" class="btn btn-primary">Cetak Laporan</a>
+                            <div class="col-lg-6">
+                                <form action="" method="POST">
+                                    <label for="tanggapan" class="form-label">Tanggapan</label>
+                                    <textarea class="form-control" name="tanggapan" id="tanggapan" rows="3"></textarea>
+                                    <button type="submit" name="tanggapi" class="btn btn-primary mt-3">Tanggapi</button>
+                                </form>
                             </div>
                         </div>
                     </div>
@@ -252,25 +198,24 @@
 
 
                 <!-- Modal -->
-                <div class="modal fade" id="newHapusUserModal" tabindex="-1" aria-labelledby="newHapusUserModalLabel" aria-hidden="true">
-                    <div class="modal-dialog">
+                <!-- Logout Modal-->
+                <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h5 class="modal-title" id="newHapusUserModalLabel">Apa anda yakin ingin menghapus User ini?</h5>
-                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
+                                <h5 class="modal-title" id="exampleModalLabel">Yakin ingin keluar?</h5>
+                                <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">×</span>
                                 </button>
                             </div>
-                            <form action="" method="post">
-                                <div class="modal-footer float-left">
-                                    <button type="button" class="btn btn-danger" data-dismiss="modal">Batal</button>
-                                    <button type="submit" class="btn btn-primary">Hapus</button>
-                                </div>
-                            </form>
+                            <div class="modal-body">Pilih "Logout" di bawah ini jika Anda siap untuk mengakhiri sesi Anda saat ini</div>
+                            <div class="modal-footer">
+                                <button class="btn btn-danger" type="button" data-dismiss="modal">Cancel</button>
+                                <a class="btn btn-primary" href="../logout.php">Logout</a>
+                            </div>
                         </div>
                     </div>
-                </div> 
-
+                </div>
 
                 <!-- Footer -->
                 <footer class="sticky-footer bg-white">
@@ -291,29 +236,7 @@
             <i class="fas fa-angle-up"></i>
         </a>
 
-        <!-- Logout Modal-->
-        <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="exampleModalLabel">Yakin ingin keluar?</h5>
-                        <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">×</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">Pilih "Logout" di bawah ini jika Anda siap untuk mengakhiri sesi Anda saat ini</div>
-                    <div class="modal-footer">
-                        <button class="btn btn-danger" type="button" data-dismiss="modal">Cancel</button>
-                        <a class="btn btn-primary" href="../logout.php">Logout</a>
-                    </div>
-                </div>
-            </div>
-        </div>
 
-
-        <script type="text/javascript">
-            window.print();
-        </script>
         <!-- Bootstrap core JavaScript-->
         <script src="../vendor/jquery/jquery.min.js"></script>
         <script src="../vendor/bootstrap/js/bootstrap.bundle.min.js"></script>

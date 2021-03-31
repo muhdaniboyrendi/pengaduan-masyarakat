@@ -1,10 +1,45 @@
 <?php
+
     session_start();
     require '../koneksi.php';
 
     if(!isset($_SESSION["admin"])){
       header("location: ../login.php");
       exit;
+    }
+
+    function data($query){
+        global $conn;
+        $query = mysqli_query($conn, $query);
+        $rows = [];
+        while ($row = mysqli_fetch_assoc($query)) {
+            $rows[] = $row;
+        }
+        return $rows;
+    }
+
+    $pengaduan = data("SELECT * FROM pengaduan
+                        INNER JOIN masyarakat
+                        ON pengaduan.nik = masyarakat.nik
+                        WHERE status = '0'");
+
+
+    if(isset($_POST['verify'])){
+        $idpengaduan = $_POST['verify'];
+        $_SESSION['idpengaduan'] = $idpengaduan;
+        $cek = mysqli_query($conn, "UPDATE pengaduan 
+                                    SET status = 'proses' 
+                                    WHERE id_pengaduan = '$idpengaduan'") 
+                                    or die(mysqli_error($conn));
+        if($cek > 0){
+            echo "<script>
+                    alert('Laporan telah terverifikasi')
+                </script";
+        }else {
+            echo "<script>
+                    alert('Laporan gagal diverifikasi')
+                </script";
+        }
     }
 
 ?>
@@ -121,7 +156,7 @@
                             <!-- Nav Item - User Information -->
                             <li class="nav-item dropdown no-arrow">
                                 <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    <span class="mr-2 d-none d-lg-inline text-gray-600 small"><?= '$username'; ?></span>
+                                    <span class="mr-2 d-none d-lg-inline text-gray-600 small"><?= $_SESSION["data"]["username"]; ?></span>
                                     <i class="fas fa-user"></i>
                                 </a>
                                 <!-- Dropdown - User Information -->
@@ -152,8 +187,43 @@
 
                     <!-- Begin Page Content -->
                     <div class="container-fluid">
-                        <!-- daftar laporan -->
-                        <h1 class="h3 mb-4 text-gray-800">Selamat Datang</h1>
+                        <h1 class="h3 mb-4 text-gray-800">Verifikasi dan Validasi</h1>
+                        <div class="row">
+                            <div class="col-lg">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr class="table-primary">
+                                            <th scope="col">No</th>
+                                            <th scope="col">Nama</th>
+                                            <th scope="col">Tanggal Pengaduan</th>
+                                            <th scope="col">Isi Laporan</th>
+                                            <th scope="col">Foto</th>
+                                            <th scope="col">Status</th>
+                                            <th scope="col">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php $i = 1; ?>
+                                        <?php foreach($pengaduan as $item): ?>
+                                        <tr>
+                                            <td scope="row"><?= $i; ?></td>
+                                            <td><?= $item["nama"]; ?></td>
+                                            <td><?= $item["tgl_pengaduan"]; ?></td>
+                                            <td><?= $item["isi_laporan"]; ?></td>
+                                            <td><img src="../img/<?= $item['foto'];?>" width="100px" alt=""></td>
+                                            <td><?= $item["status"]; ?></td>
+                                            <td>
+                                                <form action="" method="POST">
+                                                    <button value="<?= $item['id_pengaduan']; ?>" type="submit" name="verify" class="badge badge-success">Verifikasi</button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                        <?php endforeach; ?>
+                                        <?php $i++; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                     <!-- /.container-fluid -->
                 </div>

@@ -45,11 +45,13 @@
             if(password_verify($password, $row2["password"])){
                 // set session
                 if($row2['level'] == "admin"){
+                    $_SESSION["id"] = $row2['id_petugas'];
                     $_SESSION["admin"] = true;
                     $_SESSION["data"] = $row2;
                     header("location: admin/");
                     exit;
                 }elseif($row2['level'] == "petugas"){
+                    $_SESSION["id"] = $row2['id_petugas'];
                     $_SESSION["petugas"] = true;
                     $_SESSION["data"] = $row2;
                     header("location: petugas/");

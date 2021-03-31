@@ -1,44 +1,50 @@
 <?php
+
     session_start();
     require '../koneksi.php';
 
     if(!isset($_SESSION["masyarakat"])){
-      header("location: ../login.php");
-      exit;
+        header("location: ../login.php");
+        exit;
     }
+
 
     function FetchData($query){
-        global $conn; // memanggil fungsi DBConnection dan masukkan ke dalam variable $conn
-        $query = mysqli_query($conn, $query); // masukkan variable $conn, dan paramenter $query ke dalam fungsi mysqli_query
-        $rows = []; // menyiapkan varible bertipe array kosong
-        while ($row = mysqli_fetch_assoc($query)) { // looping hasil query dan di ubah menjadi array assosicative dan masukkan ke dalam folder row
-            $rows[] = $row; // masukkan data dari varible $row dan masukkan ke dalam varible $rows (yang berisi array kosong)
-        }
-        return $rows; // kembalikan data yang sudah masuh ke variable $rows
-    }
-
-    function FetchData2($query){
-        global $conn; // memanggil fungsi DBConnection dan masukkan ke dalam variable $conn
+        global $conn;
         $query = mysqli_query($conn, $query);
+        $rows = [];
         while ($row = mysqli_fetch_assoc($query)) {
             $rows[] = $row;
         }
         return $rows;
     }
-
     $pengaduan = FetchData("SELECT * FROM pengaduan
                             INNER JOIN masyarakat
-                            ON pengaduan.nik = masyarakat.nik");
+                            ON pengaduan.nik = masyarakat.nik
+                            WHERE pengaduan.status = 'selesai'");
 
-    $laporan2 = FetchData2("SELECT * FROM pengaduan
+
+    function FetchData2($query){
+        global $conn;
+        $query = mysqli_query($conn, $query);
+        $rows = [];
+        while ($row = mysqli_fetch_assoc($query)) {
+            $rows[] = $row;
+        }
+        return $rows;
+    }
+    $pengaduan2 = FetchData2("SELECT * FROM pengaduan
+                            INNER JOIN masyarakat
+                            ON pengaduan.nik = masyarakat.nik
                             INNER JOIN tanggapan
-                            ON pengaduan.id_pengaduan = tanggapan.id_pengaduan
+                            ON tanggapan.id_pengaduan = pengaduan.id_pengaduan
                             INNER JOIN petugas
                             ON tanggapan.id_petugas = petugas.id_petugas
-                            WHERE tanggapan.id_pengaduan = pengaduan.id_pengaduan");
+                            WHERE pengaduan.status = 'selesai'");
+
 
     // pagination
-    $dataPerHalaman = 5;
+    $dataPerHalaman = 20;
     $result = mysqli_query($conn, "SELECT * FROM masyarakat");
     $jumlahData = mysqli_num_rows($result);
     $jumlahHalaman = ceil($jumlahData / $dataPerHalaman);
@@ -48,8 +54,20 @@
         $halamanAktif = 1;
     }
     $dataAwal = ($dataPerHalaman * $halamanAktif) - $dataPerHalaman;
-
     $laporan = mysqli_query($conn, "SELECT * FROM masyarakat LIMIT $dataAwal, $dataPerHalaman");
+
+    if(isset($_POST['lihat'])){ // check jika tombol verify sudah di submit
+        global $conn;
+        $idpengaduan = $_POST['lihat']; // tanggap id pengaduan yang dikirim 
+        $_SESSION['lihat'] = $idpengaduan; // masukkan id pengaduan ke dalam session
+        $cek = mysqli_query($conn, "SELECT * FROM pengaduan
+                                    INNER JOIN tanggapan 
+                                    ON pengaduan.id_pengaduan = tanggapan.id_pengaduan
+                                    INNER JOIN petugas
+                                    ON tanggapan.id_petugas = petugas.id_petugas
+                                    WHERE id_pengaduan = '$idpengaduan'") 
+                                    or die(mysqli_error($conn)); // query ke database
+    }
 
 ?>
 
@@ -196,21 +214,22 @@
                                         </tr>
                                     </thead>
                                     <tbody>
+                                        <?php $i = 1; ?>
                                         <?php foreach($pengaduan as $item): ?>
                                         <tr>
-                                            <?php
-                                                $i = 1;
-                                            ?>
                                             <td><?= $i; $i++; ?></td>
                                             <td><?= $item["nik"]; ?></td>
                                             <td><?= $item["nama"]; ?></td>
                                             <td><?= $item["tgl_pengaduan"]; ?></td>
                                             <td><?= $item["status"]; ?></td>
                                             <td>
-                                                <a href="?id_pengaduan=<?= $item['id_pengaduan']; ?>" class="badge btn-primary" data-toggle="modal" data-target="#lihatModal">Lihat Laporan</a>
+                                                <form action="" method="POST">
+                                                    <a href="lihat.php?id_pengaduan=<?= $item['id_pengaduan']; ?>" class="badge btn-primary">Lihat Laporan</a>
+                                                </form>
                                             </td>
                                         </tr>
                                         <?php endforeach; ?>
+                                        <?php $i++; ?>
                                     </tbody>
                                 </table>
 
@@ -249,7 +268,6 @@
                                     </ul>
                                 </nav>
                                 <!-- end pagination -->
-
                             </div>
                         </div>
                     </div>
@@ -270,16 +288,17 @@
                                     <span aria-hidden="true">×</span>
                                 </button>
                             </div>
-                            <?php foreach($laporan2 as $item2): ?>
+                            <?php foreach($pengaduan2 as $item2): ?>
                             <div class="modal-body">
                                 <h5>Isi Laporan</h5>
                                 <p><?= $item2["isi_laporan"]; ?></p>
                                 <hr>
                                 <h5>Foto</h5>
-                                <p><?= $item2["foto"]; ?></p>
+                                <p><img src="../img/<?= $item2["foto"]; ?>" width="250px"></p>
                                 <hr>
                                 <h5>Tanggapan</h5>
                                 <p><?= $item2["tanggapan"]; ?></p>
+                                <hr>
                                 <h5>Petugas</h5>
                                 <p><?= $item2["nama_petugas"]; ?></p>
                             </div>

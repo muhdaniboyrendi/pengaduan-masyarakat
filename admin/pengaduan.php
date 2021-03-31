@@ -8,17 +8,52 @@
       exit;
     }
 
-    if(isset($_POST["login"])){
-      $username = $_POST["username"];
-      $nik = $_POST["nik"];
-      $nama = $_POST["nama"];
-      $tgl = $_POST["tgl_pengaduan"];
-      $status = $_POST["status"];
-      $foto = $_POST["foto"];
-      $isi = $_POST["isi_laporan"];
-      $result = mysqli_query($conn, "SELECT * FROM masyarakat WHERE username = '$username'");
-      $result2 = mysqli_query($conn, "SELECT * FROM pengaduan");
+    function data($query){
+        global $conn;
+        $query = mysqli_query($conn, $query);
+        $rows = [];
+        while ($row = mysqli_fetch_assoc($query)) { 
+            $rows[] = $row;
+        }
+        return $rows;
     }
+
+    $pengaduan = data("SELECT * FROM pengaduan
+                        INNER JOIN masyarakat
+                        ON pengaduan.nik = masyarakat.nik
+                        WHERE status = 'proses'");
+
+    if(isset($_POST['tanggapi'])){
+        $idpengaduan = $_POST['tanggapi'];
+        $_SESSION['idpengaduan'] = $idpengaduan;
+        $tgl = date('Y-m-d');
+        $tanggapan = $_POST['tanggapan'];
+        $cek = mysqli_query($conn, "INSERT INTO tanggapan 
+                                    VALUES('', $idpengaduan, '$tgl', '$tanggapan')") 
+                                    or die(mysqli_error($conn));
+        if($cek){
+            echo "<script>
+                    alert('Laporan telah terverifikasi')
+                </script";
+        }else {
+            echo "<script>
+                    alert('Laporan gagal diverifikasi')
+                </script";
+        }
+    }
+
+    // pagination
+    $dataPerHalaman = 7;
+    $result = mysqli_query($conn, "SELECT * FROM masyarakat");
+    $jumlahData = mysqli_num_rows($result);
+    $jumlahHalaman = ceil($jumlahData / $dataPerHalaman);
+    if(isset($_GET["halaman"])){
+        $halamanAktif = $_GET["halaman"];
+    }else {
+        $halamanAktif = 1;
+    }
+    $dataAwal = ($dataPerHalaman * $halamanAktif) - $dataPerHalaman;
+    $laporan = mysqli_query($conn, "SELECT * FROM masyarakat LIMIT $dataAwal, $dataPerHalaman");
 
 ?>
 
@@ -135,7 +170,7 @@
                             <!-- Nav Item - User Information -->
                             <li class="nav-item dropdown no-arrow">
                                 <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    <span class="mr-2 d-none d-lg-inline text-gray-600 small"><?= '$username'; ?></span>
+                                    <span class="mr-2 d-none d-lg-inline text-gray-600 small"><?= $_SESSION["data"]["username"]; ?></span>
                                     <i class="fas fa-user"></i>
                                 </a>
                                 <!-- Dropdown - User Information -->
@@ -174,8 +209,8 @@
                                     <thead>
                                         <tr class="table-primary">
                                             <th scope="col">No</th>
+                                            <th scope="col">Nama</th>
                                             <th scope="col">Tanggal Pengaduan</th>
-                                            <th scope="col">NIK</th>
                                             <th scope="col">Isi Laporan</th>
                                             <th scope="col">Foto</th>
                                             <th scope="col">Status</th>
@@ -183,24 +218,60 @@
                                         </tr>
                                     </thead>
                                     <tbody>
+                                        <?php foreach($pengaduan as $item): ?>
                                         <tr>
                                             <?php $i = 1; ?>
                                             <td scope="row"><?= $i; ?></td>
-                                            <td><?= '$tgl' ?></td>
-                                            <td><?= '$nik'; ?></td>
-                                            <td><?= '$tgl'; ?></td>
-                                            <td><?= '$isi'; ?></td>
-                                            <td><?= '$status'; ?></td>
+                                            <td><?= $item["nama"]; ?></td>
+                                            <td><?= $item["tgl_pengaduan"]; ?></td>
+                                            <td><?= $item["isi_laporan"]; ?></td>
+                                            <td><?= $item["foto"]; ?></td>
+                                            <td><?= $item["status"]; ?></td>
                                             <td>
-                                                <a href="#" class="badge badge-success">Tanggapai</a>
-                                                <a href="#" data-toggle="modal" data-target="#newHapusLaporanModal" class="badge badge-danger">Hapus</a>
+                                                <a href="tanggapan.php?id_pengaduan=<?= $item['id_pengaduan']; ?>" class="badge badge-success">Tanggapai</a>
                                             </td>
                                             <?php $i++; ?>
                                         </tr>
+                                        <?php endforeach; ?>
                                     </tbody>
                                 </table>
                             </div>
                         </div>
+                        <!-- pagination -->
+                        <nav aria-label="Page navigation example">
+                            <ul class="pagination">
+                                <?php if($halamanAktif > 1): ?>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?halaman=<?= $halamanAktif - 1; ?>">&laquo;</a>
+                                    </li>
+                                <?php else: ?>
+                                    <li class="page-item disabled">
+                                        <a class="page-link" href="#">&laquo;</a>
+                                    </li>
+                                <?php endif; ?>
+                                <?php for($i = 1; $i <= $jumlahHalaman; $i++): ?>
+                                    <?php if($i == $halamanAktif): ?>
+                                        <li class="page-item active" aria-current="page">
+                                            <a class="page-link" href="?halaman=<?= $i; ?>"><?= $i; ?></a>
+                                        </li>
+                                    <?php else: ?>
+                                                <li class="page-item" aria-current="page">
+                                                    <a class="page-link" href="?halaman=<?= $i; ?>"><?= $i; ?></a>
+                                                </li>
+                                    <?php endif; ?>
+                                <?php endfor; ?>
+                                <?php if($halamanAktif < $jumlahHalaman): ?>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?halaman=<?= $halamanAktif + 1; ?>">&raquo;</a>
+                                    </li>
+                                <?php else: ?>
+                                    <li class="page-item disabled">
+                                        <a class="page-link" href="#">&raquo;</a>
+                                    </li>
+                                <?php endif; ?>
+                            </ul>
+                        </nav>
+                        <!-- end pagination -->
                     </div>
                     <!-- /.container-fluid -->
                 </div>
@@ -208,25 +279,24 @@
 
 
                 <!-- Modal -->
-                <div class="modal fade" id="newHapusLaporanModal" tabindex="-1" aria-labelledby="newHapusLaporanModalLabel" aria-hidden="true">
-                    <div class="modal-dialog">
+                <!-- Logout Modal-->
+                <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h5 class="modal-title" id="newHapusLaporanModalLabel">Apa anda yakin ingin menghapus laporan ini?</h5>
-                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
+                                <h5 class="modal-title" id="exampleModalLabel">Yakin ingin keluar?</h5>
+                                <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">×</span>
                                 </button>
                             </div>
-                            <form action="" method="post">
-                                <div class="modal-footer float-left">
-                                    <button type="button" class="btn btn-danger" data-dismiss="modal">Batal</button>
-                                    <button type="submit" class="btn btn-primary">Hapus</button>
-                                </div>
-                            </form>
+                            <div class="modal-body">Pilih "Logout" di bawah ini jika Anda siap untuk mengakhiri sesi Anda saat ini</div>
+                            <div class="modal-footer">
+                                <button class="btn btn-danger" type="button" data-dismiss="modal">Cancel</button>
+                                <a class="btn btn-primary" href="../logout.php">Logout</a>
+                            </div>
                         </div>
                     </div>
-                </div> 
-
+                </div>
 
                 <!-- Footer -->
                 <footer class="sticky-footer bg-white">
@@ -247,24 +317,6 @@
             <i class="fas fa-angle-up"></i>
         </a>
 
-        <!-- Logout Modal-->
-        <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="exampleModalLabel">Yakin ingin keluar?</h5>
-                        <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">×</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">Pilih "Logout" di bawah ini jika Anda siap untuk mengakhiri sesi Anda saat ini</div>
-                    <div class="modal-footer">
-                        <button class="btn btn-danger" type="button" data-dismiss="modal">Cancel</button>
-                        <a class="btn btn-primary" href="login.html">Logout</a>
-                    </div>
-                </div>
-            </div>
-        </div>
 
         <!-- Bootstrap core JavaScript-->
         <script src="../vendor/jquery/jquery.min.js"></script>

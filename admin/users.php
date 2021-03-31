@@ -8,6 +8,34 @@
         exit;
     }
 
+    $result = mysqli_query($conn, "SELECT * FROM masyarakat");
+
+     // pagination
+     $dataPerHalaman = 7;
+     $result = mysqli_query($conn, "SELECT * FROM masyarakat");
+     $jumlahData = mysqli_num_rows($result);
+     $jumlahHalaman = ceil($jumlahData / $dataPerHalaman);
+     if(isset($_GET["halaman"])){
+         $halamanAktif = $_GET["halaman"];
+     }else {
+         $halamanAktif = 1;
+     }
+     $dataAwal = ($dataPerHalaman * $halamanAktif) - $dataPerHalaman;
+     $laporan = mysqli_query($conn, "SELECT * FROM masyarakat LIMIT $dataAwal, $dataPerHalaman");
+ 
+     if(isset($_POST['lihat'])){ // check jika tombol verify sudah di submit
+         global $conn;
+         $idpengaduan = $_POST['lihat']; // tanggap id pengaduan yang dikirim 
+         $_SESSION['lihat'] = $idpengaduan; // masukkan id pengaduan ke dalam session
+         $cek = mysqli_query($conn, "SELECT * FROM pengaduan
+                                     INNER JOIN tanggapan 
+                                     ON pengaduan.id_pengaduan = tanggapan.id_pengaduan
+                                     INNER JOIN petugas
+                                     ON tanggapan.id_petugas = petugas.id_petugas
+                                     WHERE id_pengaduan = '$idpengaduan'") 
+                                     or die(mysqli_error($conn)); // query ke database
+     }
+
 ?>
 
 <!DOCTYPE html>
@@ -123,7 +151,7 @@
                             <!-- Nav Item - User Information -->
                             <li class="nav-item dropdown no-arrow">
                                 <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    <span class="mr-2 d-none d-lg-inline text-gray-600 small"><?= '$username'; ?></span>
+                                    <span class="mr-2 d-none d-lg-inline text-gray-600 small"><?= $_SESSION["data"]["username"]; ?></span>
                                     <i class="fas fa-user"></i>
                                 </a>
                                 <!-- Dropdown - User Information -->
@@ -155,35 +183,69 @@
                     <!-- Begin Page Content -->
                     <div class="container-fluid">
                         <!-- tulis laporan -->
-                        <h1 class="h3 mb-4 text-gray-800">Daftar User</h1>
+                        <h1 class="h3 mb-4 text-gray-800">Daftar Masyarakat</h1>
                         <div class="row">
                             <div class="col-lg">
                                 <table class="table table-hover">
                                     <thead>
                                         <tr class="table-primary">
                                             <th scope="col">No</th>
+                                            <th scope="col">NIK</th>
                                             <th scope="col">Nama</th>
                                             <th scope="col">Username</th>
-                                            <th scope="col">Status</th>
-                                            <th scope="col">Action</th>
+                                            <th scope="col">Telepone</th>
                                         </tr>
                                     </thead>
                                     <tbody>
+                                        <?php $i = 1; ?>
+                                        <?php foreach($result as $item): ?>
                                         <tr>
-                                            <?php $i = 1; ?>
-                                            <td scope="row"><?= $i; ?></td>
-                                            <td><?= '$nama' ?></td>
-                                            <td><?= '$username'; ?></td>
-                                            <td><?= '$status'; ?></td>
-                                            <td>
-                                                <a href="#" data-toggle="modal" data-target="#newHapusUserModal" class="badge badge-danger">Hapus</a>
-                                            </td>
-                                            <?php $i++; ?>
+                                            <td scope="row"><?= $i; $i++; ?></td>
+                                            <td><?= $item["nik"]; ?></td>
+                                            <td><?= $item["nama"]; ?></td>
+                                            <td><?= $item["username"]; ?></td>
+                                            <td><?= $item["telp"]; ?></td>
                                         </tr>
+                                        <?php endforeach; ?>
                                     </tbody>
                                 </table>
                             </div>
                         </div>
+                        <!-- pagination -->
+                        <nav aria-label="Page navigation example">
+                            <ul class="pagination">
+                                <?php if($halamanAktif > 1): ?>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?halaman=<?= $halamanAktif - 1; ?>">&laquo;</a>
+                                    </li>
+                                <?php else: ?>
+                                    <li class="page-item disabled">
+                                        <a class="page-link" href="#">&laquo;</a>
+                                    </li>
+                                <?php endif; ?>
+                                <?php for($i = 1; $i <= $jumlahHalaman; $i++): ?>
+                                    <?php if($i == $halamanAktif): ?>
+                                        <li class="page-item active" aria-current="page">
+                                            <a class="page-link" href="?halaman=<?= $i; ?>"><?= $i; ?></a>
+                                        </li>
+                                    <?php else: ?>
+                                                <li class="page-item" aria-current="page">
+                                                    <a class="page-link" href="?halaman=<?= $i; ?>"><?= $i; ?></a>
+                                                </li>
+                                    <?php endif; ?>
+                                <?php endfor; ?>
+                                <?php if($halamanAktif < $jumlahHalaman): ?>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?halaman=<?= $halamanAktif + 1; ?>">&raquo;</a>
+                                    </li>
+                                <?php else: ?>
+                                    <li class="page-item disabled">
+                                        <a class="page-link" href="#">&raquo;</a>
+                                    </li>
+                                <?php endif; ?>
+                            </ul>
+                        </nav>
+                        <!-- end pagination -->
                     </div>
                     <!-- /.container-fluid -->
                 </div>
@@ -243,7 +305,7 @@
                     <div class="modal-body">Pilih "Logout" di bawah ini jika Anda siap untuk mengakhiri sesi Anda saat ini</div>
                     <div class="modal-footer">
                         <button class="btn btn-danger" type="button" data-dismiss="modal">Cancel</button>
-                        <a class="btn btn-primary" href="login.html">Logout</a>
+                        <a class="btn btn-primary" href="../logout.php">Logout</a>
                     </div>
                 </div>
             </div>
