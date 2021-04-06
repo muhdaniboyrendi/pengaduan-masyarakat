@@ -23,25 +23,6 @@
                         ON pengaduan.nik = masyarakat.nik
                         WHERE status = 'proses'");
 
-    if(isset($_POST['tanggapi'])){
-        $idpengaduan = $_POST['tanggapi'];
-        $_SESSION['idpengaduan'] = $idpengaduan;
-        $tgl = date('Y-m-d');
-        $tanggapan = $_POST['tanggapan'];
-        $cek = mysqli_query($conn, "INSERT INTO tanggapan 
-                                    VALUES('', $idpengaduan, '$tgl', '$tanggapan')") 
-                                    or die(mysqli_error($conn));
-        if($cek){
-            echo "<script>
-                    alert('Laporan telah terverifikasi')
-                </script";
-        }else {
-            echo "<script>
-                    alert('Laporan gagal diverifikasi')
-                </script";
-        }
-    }
-
     // pagination
     $dataPerHalaman = 7;
     $result = mysqli_query($conn, "SELECT * FROM masyarakat");
@@ -225,10 +206,10 @@
                                             <td><?= $item["nama"]; ?></td>
                                             <td><?= $item["tgl_pengaduan"]; ?></td>
                                             <td><?= $item["isi_laporan"]; ?></td>
-                                            <td><?= $item["foto"]; ?></td>
+                                            <td><img src="../img/<?= $item["foto"]; ?>" width="100px"></td>
                                             <td><?= $item["status"]; ?></td>
                                             <td>
-                                                <a href="tanggapan.php?id_pengaduan=<?= $item['id_pengaduan']; ?>" class="badge badge-success">Tanggapai</a>
+                                                <a href="tanggapan.php?id_pengaduan=<?= $item['id_pengaduan']; ?>" class="badge badge-primary">Tanggapai</a>
                                             </td>
                                             <?php $i++; ?>
                                         </tr>

@@ -10,13 +10,16 @@
 
 
     $id_pengaduan = $_GET['id_pengaduan'];
-    $result = mysqli_query($conn, "SELECT * FROM petugas
-                                    INNER JOIN tanggapan
-                                    ON tanggapan.id_petugas = petugas.id_petugas
-                                    INNER JOIN pengaduan
-                                    ON pengaduan.id_pengaduan = tanggapan.id_pengaduan
-                                    WHERE pengaduan.id_pengaduan = $id_pengaduan");
+    $result = mysqli_query($conn, "SELECT * FROM pengaduan WHERE id_pengaduan = $id_pengaduan");
     $row = mysqli_fetch_assoc($result);
+
+    $result1 = mysqli_query($conn, "SELECT * FROM pengaduan WHERE status = '0' AND id_pengaduan = $id_pengaduan");
+    $result2 = mysqli_query($conn, "SELECT * FROM pengaduan WHERE status = 'proses' AND id_pengaduan = $id_pengaduan");
+    $result3 = mysqli_query($conn, "SELECT * FROM pengaduan WHERE status = 'selesai' AND id_pengaduan = $id_pengaduan");
+
+    $row1 = mysqli_fetch_assoc($result1);
+    $row2 = mysqli_fetch_assoc($result2);
+    $row3 = mysqli_fetch_assoc($result3);
 
 ?>
 
@@ -72,13 +75,13 @@
                         <span>Pengaduan</span>
                     </a>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item active">
                     <a class="nav-link pb-0" href="laporan-saya.php">
                         <i class="fas fa-fw fa-tachometer-alt"></i>
                         <span>Laporan Saya</span>
                     </a>
                 </li>
-                <li class="nav-item active">
+                <li class="nav-item">
                     <a class="nav-link" href="laporan.php">
                         <i class="fas fa-fw fa-tachometer-alt"></i>
                         <span>Daftar Laporan</span>
@@ -163,13 +166,16 @@
                                 <h5>Foto Laporan</h5>
                                 <img src="../img/<?= $row['foto']; ?>" width="500px">
                                 <hr>
-                                <h5>Tanggapan</h5>
-                                <p><?= $row['tanggapan']; ?></p>
-                                <hr>
-                                <h5>Petugas</h5>
-                                <p><?= $row['nama_petugas']; ?></p>
-                                <hr>
-                                <a href="laporan.php" class="btn btn-primary">Kembali</a>
+                                <a href="laporan-saya.php" class="btn btn-primary">Kembali</a>
+                                <?php if($row1): ?>
+                                <a href="edit.php?id_pengaduan=<?= $row['id_pengaduan']; ?>" class="btn btn-success">Edit</a>
+                                <?php else: ?>
+                                <?php endif; ?>
+
+                                <?php if($row1): ?>
+                                <a href="hapus.php?id_pengaduan=<?= $row['id_pengaduan']; ?>" class="btn btn-danger">Hapus</a>
+                                <?php else: ?>
+                                <?php endif; ?>
                             </div>
                         </div>
                     </div>

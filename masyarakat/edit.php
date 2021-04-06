@@ -1,22 +1,67 @@
-<?php 
+<?php
 
     session_start();
     require '../koneksi.php';
 
     if(!isset($_SESSION["masyarakat"])){
-        header("location: ../login.php");
-        exit;
+      header("location: ../login.php");
+      exit;
     }
 
 
     $id_pengaduan = $_GET['id_pengaduan'];
-    $result = mysqli_query($conn, "SELECT * FROM petugas
-                                    INNER JOIN tanggapan
-                                    ON tanggapan.id_petugas = petugas.id_petugas
-                                    INNER JOIN pengaduan
-                                    ON pengaduan.id_pengaduan = tanggapan.id_pengaduan
-                                    WHERE pengaduan.id_pengaduan = $id_pengaduan");
+
+    $result = mysqli_query($conn, "SELECT * FROM pengaduan WHERE id_pengaduan = $id_pengaduan");
     $row = mysqli_fetch_assoc($result);
+
+
+    function edit($data){
+        global $conn;
+        $id_pengaduan = $_GET['id_pengaduan'];
+        $nik = $_SESSION["data"]["nik"];
+        $tgl = date("Y-m-d");
+        $isi = $data['isi_laporan'];
+        $status = '0';
+        $foto = upload();
+        if(!$foto){
+            return false;
+        }
+        mysqli_query($conn, "UPDATE pengaduan 
+                            SET tgl_pengaduan = '$tgl', nik = '$nik', isi_laporan = '$isi', foto = '$foto', '$status'
+                            WHERE id_pengaduan = $id_pengaduan");
+        return mysqli_affected_rows($conn);
+    }
+    if(isset($_POST["edit"])){
+        if(edit($_POST) > 0){
+            echo "<script>
+                    alert('Laporan telah berhasil diedit');
+                  </script>";
+        }else{
+            echo "<script>
+                    alert('Laporan telah berhasil diedit');
+                  </script>";
+        }
+    }
+
+
+    function upload(){
+        $namaFile = $_FILES['foto']['name'];
+        $tmpName = $_FILES['foto']['tmp_name'];
+        $formatFotoValid = ['jpg', 'jpeg', 'png'];
+        $formatFoto = explode('.', $namaFile);
+        $formatFoto = strtolower(end($formatFoto));
+        if(!in_array($formatFoto, $formatFotoValid)){
+            echo "<script>
+                    alert('File harus berupa foto');
+                </script>";
+            return false;
+        }
+        $namaFileBaru = uniqid();
+        $namaFileBaru .= '.';
+        $namaFileBaru .= $formatFoto;
+        move_uploaded_file($tmpName, '../img/' . $namaFileBaru);
+        return $namaFileBaru;
+    }
 
 ?>
 
@@ -28,7 +73,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
         <meta name="description" content="">
         <meta name="author" content="">
-        <title>Daftar Laporan</title>
+        <title>Edit Laporan</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6" crossorigin="anonymous">
         <!-- Custom fonts for this template-->
         <link href="../vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
@@ -72,13 +117,13 @@
                         <span>Pengaduan</span>
                     </a>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item active">
                     <a class="nav-link pb-0" href="laporan-saya.php">
                         <i class="fas fa-fw fa-tachometer-alt"></i>
                         <span>Laporan Saya</span>
                     </a>
                 </li>
-                <li class="nav-item active">
+                <li class="nav-item">
                     <a class="nav-link" href="laporan.php">
                         <i class="fas fa-fw fa-tachometer-alt"></i>
                         <span>Daftar Laporan</span>
@@ -153,24 +198,35 @@
 
                     <!-- Begin Page Content -->
                     <div class="container-fluid">
-                        <!-- daftar laporan -->
-                        <h1 class="h3 mb-4 text-gray-800">Detail Laporan</h1>
-                        <div class="row">
-                            <div class="col-lg">
-                                <h5>Isi Laporan</h5>
-                                <p><?= $row['isi_laporan']; ?></p>
-                                <hr>
-                                <h5>Foto Laporan</h5>
-                                <img src="../img/<?= $row['foto']; ?>" width="500px">
-                                <hr>
-                                <h5>Tanggapan</h5>
-                                <p><?= $row['tanggapan']; ?></p>
-                                <hr>
-                                <h5>Petugas</h5>
-                                <p><?= $row['nama_petugas']; ?></p>
-                                <hr>
-                                <a href="laporan.php" class="btn btn-primary">Kembali</a>
-                            </div>
+                        <!-- tulis laporan -->
+                        <h1 class="h3 mb-4 text-gray-800">Tulis Pengaduan</h1>
+                        <div class="col-lg-12">
+                            <form action="" method="POST" enctype="multipart/form-data">
+                                <div class="mb-3">
+                                    <input type="hidden" name="id_pengaduan" value="<?= $row['id_pengaduan']; ?>"
+                                    <label for="isi_laporan" class="form-label">Tulis Laporan</label>
+                                    <input type="text" class="form-control" value="<?= $row['isi_laporan']; ?>" disabled>
+                                    <textarea class="form-control" id="isi_laporan" name="isi_laporan" rows="3"></textarea>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-lg-5">
+                                        <div class="mb-0">
+                                            <label>Foto</label>
+                                            <br>
+                                            <img src="../img/<?= $row['foto']; ?>" width="250px">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-lg-5">
+                                        <div class="mb-3">
+                                            <label>Pilih Foto Baru</label>
+                                            <input class="form-control" type="file" name="foto" id="formFile">
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="submit" name="edit" class="btn btn-primary">Edit</button>
+                            </form>
                         </div>
                     </div>
                     <!-- /.container-fluid -->

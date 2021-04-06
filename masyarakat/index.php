@@ -62,6 +62,12 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link pb-0" href="laporan-saya.php">
+                        <i class="fas fa-fw fa-tachometer-alt"></i>
+                        <span>Laporan Saya</span>
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link" href="laporan.php">
                         <i class="fas fa-fw fa-tachometer-alt"></i>
                         <span>Daftar Laporan</span>

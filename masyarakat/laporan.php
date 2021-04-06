@@ -24,25 +24,6 @@
                             WHERE pengaduan.status = 'selesai'");
 
 
-    function FetchData2($query){
-        global $conn;
-        $query = mysqli_query($conn, $query);
-        $rows = [];
-        while ($row = mysqli_fetch_assoc($query)) {
-            $rows[] = $row;
-        }
-        return $rows;
-    }
-    $pengaduan2 = FetchData2("SELECT * FROM pengaduan
-                            INNER JOIN masyarakat
-                            ON pengaduan.nik = masyarakat.nik
-                            INNER JOIN tanggapan
-                            ON tanggapan.id_pengaduan = pengaduan.id_pengaduan
-                            INNER JOIN petugas
-                            ON tanggapan.id_petugas = petugas.id_petugas
-                            WHERE pengaduan.status = 'selesai'");
-
-
     // pagination
     $dataPerHalaman = 20;
     $result = mysqli_query($conn, "SELECT * FROM masyarakat");
@@ -56,18 +37,6 @@
     $dataAwal = ($dataPerHalaman * $halamanAktif) - $dataPerHalaman;
     $laporan = mysqli_query($conn, "SELECT * FROM masyarakat LIMIT $dataAwal, $dataPerHalaman");
 
-    if(isset($_POST['lihat'])){ // check jika tombol verify sudah di submit
-        global $conn;
-        $idpengaduan = $_POST['lihat']; // tanggap id pengaduan yang dikirim 
-        $_SESSION['lihat'] = $idpengaduan; // masukkan id pengaduan ke dalam session
-        $cek = mysqli_query($conn, "SELECT * FROM pengaduan
-                                    INNER JOIN tanggapan 
-                                    ON pengaduan.id_pengaduan = tanggapan.id_pengaduan
-                                    INNER JOIN petugas
-                                    ON tanggapan.id_petugas = petugas.id_petugas
-                                    WHERE id_pengaduan = '$idpengaduan'") 
-                                    or die(mysqli_error($conn)); // query ke database
-    }
 
 ?>
 
@@ -121,6 +90,12 @@
                     <a class="nav-link pb-0" href="pengaduan.php">
                         <i class="fas fa-fw fa-tachometer-alt"></i>
                         <span>Pengaduan</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link pb-0" href="laporan-saya.php">
+                        <i class="fas fa-fw fa-tachometer-alt"></i>
+                        <span>Laporan Saya</span>
                     </a>
                 </li>
                 <li class="nav-item active">
