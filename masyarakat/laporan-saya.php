@@ -1,51 +1,24 @@
 <?php
 
     session_start();
-    require '../koneksi.php';
+    require '../function.php';
 
     if(!isset($_SESSION["masyarakat"])){
-        header("location: ../login.php");
+        header("location: ../");
         exit;
     }
 
-
-    function FetchData($query){
-        global $conn;
-        $query = mysqli_query($conn, $query);
-        $rows = [];
-        while ($row = mysqli_fetch_assoc($query)) {
-            $rows[] = $row;
-        }
-        return $rows;
-    }
-    $pengaduan = FetchData("SELECT * FROM pengaduan
-                            INNER JOIN masyarakat
-                            ON pengaduan.nik = masyarakat.nik
-                            WHERE username = '".$_SESSION['data']['username']."'");
-
-
-    function FetchData2($query){
-        global $conn;
-        $query = mysqli_query($conn, $query);
-        $rows = [];
-        while ($row = mysqli_fetch_assoc($query)) {
-            $rows[] = $row;
-        }
-        return $rows;
-    }
-    $pengaduan2 = FetchData2("SELECT * FROM pengaduan
-                            INNER JOIN masyarakat
-                            ON pengaduan.nik = masyarakat.nik
-                            INNER JOIN tanggapan
-                            ON tanggapan.id_pengaduan = pengaduan.id_pengaduan
-                            INNER JOIN petugas
-                            ON tanggapan.id_petugas = petugas.id_petugas
-                            WHERE pengaduan.status = 'selesai'");
-
+    $pengaduan = data("SELECT * FROM pengaduan
+                        INNER JOIN masyarakat
+                        ON pengaduan.nik = masyarakat.nik
+                        WHERE username = '".$_SESSION['data']['username']."'");
 
     // pagination
     $dataPerHalaman = 10;
-    $result = mysqli_query($conn, "SELECT * FROM masyarakat");
+    $result = mysqli_query($conn, "SELECT * FROM pengaduan
+                                    INNER JOIN masyarakat
+                                    ON pengaduan.nik = masyarakat.nik
+                                    WHERE username = '".$_SESSION['data']['username']."'");
     $jumlahData = mysqli_num_rows($result);
     $jumlahHalaman = ceil($jumlahData / $dataPerHalaman);
     if(isset($_GET["halaman"])){
@@ -72,7 +45,7 @@
         <link href="../vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
         <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
         <!-- Custom styles for this template-->
-        <link href="../css/sb-admin-2.min.css" rel="stylesheet">
+        <link href="../vendor/css/sb-admin-2.min.css" rel="stylesheet">
     </head>
     <body id="page-top"> 
 
@@ -106,13 +79,13 @@
                 </div>
                 <li class="nav-item">
                     <a class="nav-link pb-0" href="pengaduan.php">
-                        <i class="fas fa-fw fa-tachometer-alt"></i>
+                        <i class="fas fa-fw fa-comment-alt"></i>
                         <span>Pengaduan</span>
                     </a>
                 </li>
                 <li class="nav-item active">
                     <a class="nav-link pb-0" href="laporan-saya.php">
-                        <i class="fas fa-fw fa-tachometer-alt"></i>
+                        <i class="fas fa-fw fa-envelope-open-text"></i>
                         <span>Laporan Saya</span>
                     </a>
                 </li>
@@ -328,12 +301,9 @@
             </div>
         </div>
 
-        <!-- Bootstrap core JavaScript-->
         <script src="../vendor/jquery/jquery.min.js"></script>
         <script src="../vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-        <!-- Core plugin JavaScript-->
         <script src="../vendor/jquery-easing/jquery.easing.min.js"></script>
-        <!-- Custom scripts for all pages-->
-        <script src="../js/sb-admin-2.min.js"></script>
+        <script src="../vendor/js/sb-admin-2.min.js"></script>
     </body>
 </html>

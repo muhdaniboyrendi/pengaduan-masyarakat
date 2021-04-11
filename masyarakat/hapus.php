@@ -1,10 +1,10 @@
 <?php 
 
     session_start();
-    require '../koneksi.php';
+    require '../function.php';
 
     if(!isset($_SESSION["masyarakat"])){
-        header("location: ../login.php");
+        header("location: ../");
         exit;
     }
 

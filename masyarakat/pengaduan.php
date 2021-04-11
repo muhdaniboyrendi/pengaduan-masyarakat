@@ -1,59 +1,11 @@
 <?php
 
     session_start();
-    require '../koneksi.php';
+    require '../function.php';
 
     if(!isset($_SESSION["masyarakat"])){
       header("location: ../login.php");
       exit;
-    }
-
-    function pengaduan($data){
-        global $conn;
-        $nik = $_SESSION["data"]["nik"];
-        $tgl = date("Y-m-d");
-        $isi = $data['isi_laporan'];
-        $status = '0';
-
-        // upload foto
-        $foto = upload();
-        if(!$foto){
-            return false;
-        }
-
-        // tambah ke database
-        mysqli_query($conn, "INSERT INTO pengaduan VALUES('', '$tgl', '$nik', '$isi', '$foto', '$status')");
-        return mysqli_affected_rows($conn);
-    }
-
-    function upload(){
-        $namaFile = $_FILES['foto']['name'];
-        $error = $_FILES['foto']['error'];
-        $tmpName = $_FILES['foto']['tmp_name'];
-
-        if($error === 4){
-            echo "<script>
-                    alert('Laporan harus disertakan foto');
-                </script>";
-            return false;
-        }
-
-        $formatFotoValid = ['jpg', 'jpeg', 'png'];
-        $formatFoto = explode('.', $namaFile);
-        $formatFoto = strtolower(end($formatFoto));
-        if(!in_array($formatFoto, $formatFotoValid)){
-            echo "<script>
-                    alert('File harus berupa foto');
-                </script>";
-            return false;
-        }
-
-        $namaFileBaru = uniqid();
-        $namaFileBaru .= '.';
-        $namaFileBaru .= $formatFoto;
-
-        move_uploaded_file($tmpName, '../img/' . $namaFileBaru);
-        return $namaFileBaru;
     }
 
     if(isset($_POST["kirim"])){
@@ -82,7 +34,7 @@
         <link href="../vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
         <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
         <!-- Custom styles for this template-->
-        <link href="../css/sb-admin-2.min.css" rel="stylesheet">
+        <link href="../vendor/css/sb-admin-2.min.css" rel="stylesheet">
     </head>
     <body id="page-top"> 
 
@@ -116,13 +68,13 @@
                 </div>
                 <li class="nav-item active">
                     <a class="nav-link pb-0" href="pengaduan.php">
-                        <i class="fas fa-fw fa-tachometer-alt"></i>
+                        <i class="fas fa-fw fa-comment-alt"></i>
                         <span>Pengaduan</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link pb-0" href="laporan-saya.php">
-                        <i class="fas fa-fw fa-tachometer-alt"></i>
+                        <i class="fas fa-fw fa-envelope-open-text"></i>
                         <span>Laporan Saya</span>
                     </a>
                 </li>
@@ -217,7 +169,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <button type="submit" name="kirim" class="btn btn-primary">Kirim</button>
+                                <button type="submit" name="kirim" class="btn btn-outline-primary">Kirim</button>
                             </form>
                         </div>
                     </div>

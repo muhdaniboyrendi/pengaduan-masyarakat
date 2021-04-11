@@ -1,32 +1,22 @@
 <?php
 
     session_start();
-    require '../koneksi.php';
+    require '../function.php';
 
     if(!isset($_SESSION["masyarakat"])){
         header("location: ../login.php");
         exit;
     }
 
-
-    function FetchData($query){
-        global $conn;
-        $query = mysqli_query($conn, $query);
-        $rows = [];
-        while ($row = mysqli_fetch_assoc($query)) {
-            $rows[] = $row;
-        }
-        return $rows;
-    }
-    $pengaduan = FetchData("SELECT * FROM pengaduan
-                            INNER JOIN masyarakat
-                            ON pengaduan.nik = masyarakat.nik
-                            WHERE pengaduan.status = 'selesai'");
-
+    $pengaduan = data("SELECT * FROM pengaduan
+                        INNER JOIN masyarakat
+                        ON pengaduan.nik = masyarakat.nik");
 
     // pagination
     $dataPerHalaman = 20;
-    $result = mysqli_query($conn, "SELECT * FROM masyarakat");
+    $result = mysqli_query($conn, "SELECT * FROM pengaduan
+                                    INNER JOIN masyarakat
+                                    ON pengaduan.nik = masyarakat.nik");
     $jumlahData = mysqli_num_rows($result);
     $jumlahHalaman = ceil($jumlahData / $dataPerHalaman);
     if(isset($_GET["halaman"])){
@@ -36,7 +26,6 @@
     }
     $dataAwal = ($dataPerHalaman * $halamanAktif) - $dataPerHalaman;
     $laporan = mysqli_query($conn, "SELECT * FROM masyarakat LIMIT $dataAwal, $dataPerHalaman");
-
 
 ?>
 
@@ -54,7 +43,7 @@
         <link href="../vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
         <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
         <!-- Custom styles for this template-->
-        <link href="../css/sb-admin-2.min.css" rel="stylesheet">
+        <link href="../vendor/css/sb-admin-2.min.css" rel="stylesheet">
     </head>
     <body id="page-top"> 
 
@@ -88,13 +77,13 @@
                 </div>
                 <li class="nav-item">
                     <a class="nav-link pb-0" href="pengaduan.php">
-                        <i class="fas fa-fw fa-tachometer-alt"></i>
+                        <i class="fas fa-fw fa-comment-alt"></i>
                         <span>Pengaduan</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link pb-0" href="laporan-saya.php">
-                        <i class="fas fa-fw fa-tachometer-alt"></i>
+                        <i class="fas fa-fw fa-envelope-open-text"></i>
                         <span>Laporan Saya</span>
                     </a>
                 </li>
