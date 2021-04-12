@@ -1,56 +1,13 @@
 <?php
 
     session_start();
-    require '../koneksi.php';
+    require '../function.php';
 
     if(!isset($_SESSION["admin"])){
         header("location: ../login.php");
         exit;
     }
-
-    function registerpetugas($data){
-        global $conn;
-
-        $nama_petugas = $data["nama_petugas"];
-        $username = $data["username"];
-        $password = $data["password"];
-        $telp = $data["telp"];
-        $level = $data["level"];
-        $confirmpassword = mysqli_real_escape_string($conn, $data["password2"]);
-
-        // cek username
-        $sql = mysqli_query($conn, "SELECT username FROM masyarakat WHERE username = '$username'");
-        $sql2 = mysqli_query($conn, "SELECT username FROM petugas WHERE username = '$username'");
-
-        if(mysqli_fetch_assoc($sql)){
-            echo "<script>
-                    alert('Username Telah Terdaftar')
-                  </script";
-            return false;
-        }
-        if(mysqli_fetch_assoc($sql2)){
-            echo "<script>
-                    alert('Username Telah Terdaftar')
-                  </script";
-            return false;
-        }
-
-        // cek password
-        if($password !== $confirmpassword){
-            echo "<script>
-                    alert('Your Password Cannot be Confirmed')
-                  </script";
-            return false;
-        }
-
-        // enkripsi password
-        $password = password_hash($password, PASSWORD_DEFAULT);
-
-        // tambah ke database
-        mysqli_query($conn, "INSERT INTO petugas VALUES('', '$nama_petugas', '$username', '$password', '$telp', '$level')");
-        return mysqli_affected_rows($conn);
-    }
-
+    
     if(isset($_POST["register"])){
         if(registerpetugas($_POST) > 0){
             echo "<script>
@@ -78,7 +35,7 @@
         <link href="../vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
         <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
         <!-- Custom styles for this template-->
-        <link href="../css/sb-admin-2.min.css" rel="stylesheet">
+        <link href="../vendor/css/sb-admin-2.min.css" rel="stylesheet">
     </head>
     <body id="page-top">
 
@@ -234,7 +191,7 @@
                                         <option value="petugas">Petugas</option>
                                     </select>
                                 </div>
-                                <button type="submit" name="register" class="btn btn-primary">DAFTAR</button>
+                                <button type="submit" name="register" class="btn btn-outline-primary">DAFTAR</button>
                             </form>
                         </div>
                     </div>
@@ -287,6 +244,6 @@
         <!-- Core plugin JavaScript-->
         <script src="../vendor/jquery-easing/jquery.easing.min.js"></script>
         <!-- Custom scripts for all pages-->
-        <script src="../js/sb-admin-2.min.js"></script>
+        <script src="../vendor/js/sb-admin-2.min.js"></script>
     </body>
 </html>

@@ -55,6 +55,47 @@ function registermasyarakat($data){
 }
 
 
+// register petugas
+function registerpetugas($data){
+    global $conn;
+
+    $nama_petugas = $data["nama_petugas"];
+    $username = $data["username"];
+    $password = $data["password"];
+    $telp = $data["telp"];
+    $level = $data["level"];
+    $confirmpassword = mysqli_real_escape_string($conn, $data["password2"]);
+
+    $sql = mysqli_query($conn, "SELECT username FROM masyarakat WHERE username = '$username'");
+    $sql2 = mysqli_query($conn, "SELECT username FROM petugas WHERE username = '$username'");
+
+    if(mysqli_fetch_assoc($sql)){
+        echo "<script>
+                alert('Username Telah Terdaftar')
+              </script";
+        return false;
+    }
+    if(mysqli_fetch_assoc($sql2)){
+        echo "<script>
+                alert('Username Telah Terdaftar')
+              </script";
+        return false;
+    }
+
+    if($password !== $confirmpassword){
+        echo "<script>
+                alert('Your Password Cannot be Confirmed')
+              </script";
+        return false;
+    }
+
+    $password = password_hash($password, PASSWORD_DEFAULT);
+
+    mysqli_query($conn, "INSERT INTO petugas VALUES('', '$nama_petugas', '$username', '$password', '$telp', '$level')");
+    return mysqli_affected_rows($conn);
+}
+
+
 // pengaduan
 function pengaduan($data){
     global $conn;

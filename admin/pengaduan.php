@@ -1,21 +1,11 @@
 <?php
 
     session_start();
-    require '../koneksi.php';
+    require '../function.php';
 
     if(!isset($_SESSION["admin"])){
       header("location: ../login.php");
       exit;
-    }
-
-    function data($query){
-        global $conn;
-        $query = mysqli_query($conn, $query);
-        $rows = [];
-        while ($row = mysqli_fetch_assoc($query)) { 
-            $rows[] = $row;
-        }
-        return $rows;
     }
 
     $pengaduan = data("SELECT * FROM pengaduan
@@ -51,7 +41,7 @@
         <link href="../vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
         <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
         <!-- Custom styles for this template-->
-        <link href="../css/sb-admin-2.min.css" rel="stylesheet">
+        <link href="../vendor/css/sb-admin-2.min.css" rel="stylesheet">
     </head>
     <body id="page-top">
 
@@ -305,6 +295,6 @@
         <!-- Core plugin JavaScript-->
         <script src="../vendor/jquery-easing/jquery.easing.min.js"></script>
         <!-- Custom scripts for all pages-->
-        <script src="../js/sb-admin-2.min.js"></script>
+        <script src="../vendor/js/sb-admin-2.min.js"></script>
     </body>
 </html>

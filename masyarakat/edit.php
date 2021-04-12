@@ -1,7 +1,7 @@
 <?php
 
     session_start();
-    require '../koneksi.php';
+    require '../function.php';
 
     if(!isset($_SESSION["masyarakat"])){
       header("location: ../login.php");
@@ -43,26 +43,6 @@
         }
     }
 
-
-    function upload(){
-        $namaFile = $_FILES['foto']['name'];
-        $tmpName = $_FILES['foto']['tmp_name'];
-        $formatFotoValid = ['jpg', 'jpeg', 'png'];
-        $formatFoto = explode('.', $namaFile);
-        $formatFoto = strtolower(end($formatFoto));
-        if(!in_array($formatFoto, $formatFotoValid)){
-            echo "<script>
-                    alert('File harus berupa foto');
-                </script>";
-            return false;
-        }
-        $namaFileBaru = uniqid();
-        $namaFileBaru .= '.';
-        $namaFileBaru .= $formatFoto;
-        move_uploaded_file($tmpName, '../img/' . $namaFileBaru);
-        return $namaFileBaru;
-    }
-
 ?>
 
 <!DOCTYPE html>
@@ -79,7 +59,7 @@
         <link href="../vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
         <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
         <!-- Custom styles for this template-->
-        <link href="../css/sb-admin-2.min.css" rel="stylesheet">
+        <link href="../vendor/css/sb-admin-2.min.css" rel="stylesheet">
     </head>
     <body id="page-top"> 
 
@@ -197,7 +177,7 @@
 
 
                     <!-- Begin Page Content -->
-                    <div class="container-fluid">
+                    <div class="container-fluid pb-5">
                         <!-- tulis laporan -->
                         <h1 class="h3 mb-4 text-gray-800">Tulis Pengaduan</h1>
                         <div class="col-lg-12">
@@ -213,7 +193,7 @@
                                         <div class="mb-0">
                                             <label>Foto</label>
                                             <br>
-                                            <img src="../img/<?= $row['foto']; ?>" width="250px">
+                                            <img src="../vendor/img/<?= $row['foto']; ?>" width="250px">
                                         </div>
                                     </div>
                                 </div>
@@ -225,7 +205,8 @@
                                         </div>
                                     </div>
                                 </div>
-                                <button type="submit" name="edit" class="btn btn-primary">Edit</button>
+                                <button type="submit" name="edit" class="btn btn-outline-primary">Edit</button>
+                                <a href="lihat-saya.php?id_pengaduan=<?= $row['id_pengaduan']; ?>" class="btn btn-outline-danger">Batal</a>
                             </form>
                         </div>
                     </div>
